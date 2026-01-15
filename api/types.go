@@ -1,6 +1,7 @@
 package api
 
 import (
+	"encoding/json"
 	"time"
 )
 
@@ -15,7 +16,7 @@ type Issue struct {
 // IssueFields contains the fields of a Jira issue
 type IssueFields struct {
 	Summary     string       `json:"summary"`
-	Description *ADFDocument `json:"description,omitempty"`
+	Description *Description `json:"description,omitempty"`
 	Status      *Status      `json:"status,omitempty"`
 	IssueType   *IssueType   `json:"issuetype,omitempty"`
 	Priority    *Priority    `json:"priority,omitempty"`
@@ -28,6 +29,52 @@ type IssueFields struct {
 	Components  []Component  `json:"components,omitempty"`
 	Sprint      *Sprint      `json:"sprint,omitempty"`
 	Parent      *Issue       `json:"parent,omitempty"`
+}
+
+// Description can be either a string (Agile API) or ADF document (REST API v3)
+type Description struct {
+	Text string       // Plain text (from string or extracted from ADF)
+	ADF  *ADFDocument // Original ADF document if available
+}
+
+// UnmarshalJSON handles both string and ADF document formats
+func (d *Description) UnmarshalJSON(data []byte) error {
+	// Try as string first
+	var str string
+	if err := json.Unmarshal(data, &str); err == nil {
+		d.Text = str
+		return nil
+	}
+
+	// Try as ADF document
+	var adf ADFDocument
+	if err := json.Unmarshal(data, &adf); err == nil {
+		d.ADF = &adf
+		d.Text = adf.ToPlainText()
+		return nil
+	}
+
+	// If neither works, just ignore (null or empty)
+	return nil
+}
+
+// MarshalJSON always outputs ADF format for API compatibility
+func (d *Description) MarshalJSON() ([]byte, error) {
+	if d.ADF != nil {
+		return json.Marshal(d.ADF)
+	}
+	if d.Text != "" {
+		return json.Marshal(NewADFDocument(d.Text))
+	}
+	return []byte("null"), nil
+}
+
+// ToPlainText returns the plain text content
+func (d *Description) ToPlainText() string {
+	if d == nil {
+		return ""
+	}
+	return d.Text
 }
 
 // ADFDocument represents Atlassian Document Format content

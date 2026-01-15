@@ -39,8 +39,8 @@ func (o *Options) APIClient() (*api.Client, error) {
 	})
 }
 
-// NewCmd creates the root command
-func NewCmd() *cobra.Command {
+// NewCmd creates the root command and returns the options struct
+func NewCmd() (*cobra.Command, *Options) {
 	opts := &Options{
 		Stdin:  os.Stdin,
 		Stdout: os.Stdout,
@@ -59,12 +59,12 @@ func NewCmd() *cobra.Command {
 		SilenceErrors: true,
 	}
 
-	// Global flags
+	// Global flags - bound to opts struct
 	cmd.PersistentFlags().StringVarP(&opts.Output, "output", "o", "table", "Output format: table, json, plain")
 	cmd.PersistentFlags().BoolVar(&opts.NoColor, "no-color", false, "Disable colored output")
 	cmd.PersistentFlags().BoolVarP(&opts.Verbose, "verbose", "v", false, "Enable verbose output")
 
-	return cmd
+	return cmd, opts
 }
 
 // RegisterCommands registers subcommands with the root command

@@ -23,8 +23,7 @@ func main() {
 }
 
 func run() error {
-	rootCmd := root.NewCmd()
-	opts := root.GetOptions(rootCmd)
+	rootCmd, opts := root.NewCmd()
 
 	// Register all commands
 	configcmd.Register(rootCmd, opts)
