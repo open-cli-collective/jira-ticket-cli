@@ -1,0 +1,76 @@
+package api
+
+import (
+	"encoding/json"
+	"fmt"
+	"strings"
+)
+
+// GetFields returns all field definitions
+func (c *Client) GetFields() ([]Field, error) {
+	urlStr := fmt.Sprintf("%s/field", c.BaseURL)
+	body, err := c.get(urlStr)
+	if err != nil {
+		return nil, err
+	}
+
+	var fields []Field
+	if err := json.Unmarshal(body, &fields); err != nil {
+		return nil, fmt.Errorf("failed to parse fields: %w", err)
+	}
+
+	return fields, nil
+}
+
+// GetCustomFields returns only custom field definitions
+func (c *Client) GetCustomFields() ([]Field, error) {
+	fields, err := c.GetFields()
+	if err != nil {
+		return nil, err
+	}
+
+	var customFields []Field
+	for _, f := range fields {
+		if f.Custom {
+			customFields = append(customFields, f)
+		}
+	}
+
+	return customFields, nil
+}
+
+// FindFieldByName finds a field by name (case-insensitive)
+func FindFieldByName(fields []Field, name string) *Field {
+	nameLower := strings.ToLower(name)
+	for i := range fields {
+		if strings.ToLower(fields[i].Name) == nameLower {
+			return &fields[i]
+		}
+	}
+	return nil
+}
+
+// FindFieldByID finds a field by ID
+func FindFieldByID(fields []Field, id string) *Field {
+	for i := range fields {
+		if fields[i].ID == id {
+			return &fields[i]
+		}
+	}
+	return nil
+}
+
+// ResolveFieldID resolves a field name or ID to its ID
+func ResolveFieldID(fields []Field, nameOrID string) (string, error) {
+	// First try exact ID match
+	if f := FindFieldByID(fields, nameOrID); f != nil {
+		return f.ID, nil
+	}
+
+	// Then try name match
+	if f := FindFieldByName(fields, nameOrID); f != nil {
+		return f.ID, nil
+	}
+
+	return "", fmt.Errorf("field not found: %s", nameOrID)
+}

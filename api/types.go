@@ -1,0 +1,277 @@
+package api
+
+import (
+	"time"
+)
+
+// Issue represents a Jira issue
+type Issue struct {
+	ID     string      `json:"id"`
+	Key    string      `json:"key"`
+	Self   string      `json:"self"`
+	Fields IssueFields `json:"fields"`
+}
+
+// IssueFields contains the fields of a Jira issue
+type IssueFields struct {
+	Summary     string       `json:"summary"`
+	Description *ADFDocument `json:"description,omitempty"`
+	Status      *Status      `json:"status,omitempty"`
+	IssueType   *IssueType   `json:"issuetype,omitempty"`
+	Priority    *Priority    `json:"priority,omitempty"`
+	Assignee    *User        `json:"assignee,omitempty"`
+	Reporter    *User        `json:"reporter,omitempty"`
+	Project     *Project     `json:"project,omitempty"`
+	Created     string       `json:"created,omitempty"`
+	Updated     string       `json:"updated,omitempty"`
+	Labels      []string     `json:"labels,omitempty"`
+	Components  []Component  `json:"components,omitempty"`
+	Sprint      *Sprint      `json:"sprint,omitempty"`
+	Parent      *Issue       `json:"parent,omitempty"`
+}
+
+// ADFDocument represents Atlassian Document Format content
+type ADFDocument struct {
+	Type    string    `json:"type"`
+	Version int       `json:"version,omitempty"`
+	Content []ADFNode `json:"content,omitempty"`
+}
+
+// ADFNode represents a node in an ADF document
+type ADFNode struct {
+	Type    string                 `json:"type"`
+	Text    string                 `json:"text,omitempty"`
+	Content []ADFNode              `json:"content,omitempty"`
+	Attrs   map[string]interface{} `json:"attrs,omitempty"`
+	Marks   []ADFMark              `json:"marks,omitempty"`
+}
+
+// ADFMark represents text formatting in ADF
+type ADFMark struct {
+	Type  string                 `json:"type"`
+	Attrs map[string]interface{} `json:"attrs,omitempty"`
+}
+
+// NewADFDocument creates a simple text ADF document
+func NewADFDocument(text string) *ADFDocument {
+	if text == "" {
+		return nil
+	}
+	return &ADFDocument{
+		Type:    "doc",
+		Version: 1,
+		Content: []ADFNode{
+			{
+				Type: "paragraph",
+				Content: []ADFNode{
+					{Type: "text", Text: text},
+				},
+			},
+		},
+	}
+}
+
+// ToPlainText extracts plain text from an ADF document
+func (d *ADFDocument) ToPlainText() string {
+	if d == nil {
+		return ""
+	}
+	return extractText(d.Content)
+}
+
+func extractText(nodes []ADFNode) string {
+	var result string
+	for _, node := range nodes {
+		if node.Text != "" {
+			result += node.Text
+		}
+		if len(node.Content) > 0 {
+			result += extractText(node.Content)
+		}
+		if node.Type == "paragraph" || node.Type == "hardBreak" {
+			result += "\n"
+		}
+	}
+	return result
+}
+
+// Status represents an issue status
+type Status struct {
+	ID             string         `json:"id"`
+	Name           string         `json:"name"`
+	Description    string         `json:"description,omitempty"`
+	StatusCategory StatusCategory `json:"statusCategory,omitempty"`
+}
+
+// StatusCategory represents a status category
+type StatusCategory struct {
+	ID   int    `json:"id"`
+	Key  string `json:"key"`
+	Name string `json:"name"`
+}
+
+// IssueType represents an issue type
+type IssueType struct {
+	ID          string `json:"id"`
+	Name        string `json:"name"`
+	Description string `json:"description,omitempty"`
+	Subtask     bool   `json:"subtask"`
+}
+
+// Priority represents an issue priority
+type Priority struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
+// User represents a Jira user
+type User struct {
+	AccountID    string            `json:"accountId"`
+	DisplayName  string            `json:"displayName"`
+	EmailAddress string            `json:"emailAddress,omitempty"`
+	Active       bool              `json:"active"`
+	AvatarURLs   map[string]string `json:"avatarUrls,omitempty"`
+}
+
+// Project represents a Jira project
+type Project struct {
+	ID         string            `json:"id"`
+	Key        string            `json:"key"`
+	Name       string            `json:"name"`
+	AvatarURLs map[string]string `json:"avatarUrls,omitempty"`
+}
+
+// Component represents a project component
+type Component struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+}
+
+// Sprint represents an agile sprint
+type Sprint struct {
+	ID            int        `json:"id"`
+	Name          string     `json:"name"`
+	State         string     `json:"state"`
+	StartDate     *time.Time `json:"startDate,omitempty"`
+	EndDate       *time.Time `json:"endDate,omitempty"`
+	CompleteDate  *time.Time `json:"completeDate,omitempty"`
+	OriginBoardID int        `json:"originBoardId,omitempty"`
+	Goal          string     `json:"goal,omitempty"`
+}
+
+// Board represents an agile board
+type Board struct {
+	ID       int           `json:"id"`
+	Name     string        `json:"name"`
+	Type     string        `json:"type"`
+	Location BoardLocation `json:"location,omitempty"`
+}
+
+// BoardLocation contains project info for a board
+type BoardLocation struct {
+	ProjectID   int    `json:"projectId"`
+	ProjectKey  string `json:"projectKey"`
+	ProjectName string `json:"projectName"`
+}
+
+// Transition represents a workflow transition
+type Transition struct {
+	ID   string `json:"id"`
+	Name string `json:"name"`
+	To   Status `json:"to"`
+}
+
+// Comment represents an issue comment
+type Comment struct {
+	ID      string       `json:"id"`
+	Author  User         `json:"author"`
+	Body    *ADFDocument `json:"body"`
+	Created string       `json:"created"`
+	Updated string       `json:"updated"`
+}
+
+// Field represents a Jira field definition
+type Field struct {
+	ID          string      `json:"id"`
+	Key         string      `json:"key"`
+	Name        string      `json:"name"`
+	Custom      bool        `json:"custom"`
+	Orderable   bool        `json:"orderable"`
+	Navigable   bool        `json:"navigable"`
+	Searchable  bool        `json:"searchable"`
+	Schema      FieldSchema `json:"schema,omitempty"`
+	ClauseNames []string    `json:"clauseNames,omitempty"`
+}
+
+// FieldSchema describes the data type of a field
+type FieldSchema struct {
+	Type     string `json:"type"`
+	Items    string `json:"items,omitempty"`
+	System   string `json:"system,omitempty"`
+	Custom   string `json:"custom,omitempty"`
+	CustomID int    `json:"customId,omitempty"`
+}
+
+// SearchResult represents search results from JQL
+type SearchResult struct {
+	StartAt    int     `json:"startAt"`
+	MaxResults int     `json:"maxResults"`
+	Total      int     `json:"total"`
+	Issues     []Issue `json:"issues"`
+}
+
+// BoardsResponse represents the response from listing boards
+type BoardsResponse struct {
+	MaxResults int     `json:"maxResults"`
+	StartAt    int     `json:"startAt"`
+	Total      int     `json:"total"`
+	IsLast     bool    `json:"isLast"`
+	Values     []Board `json:"values"`
+}
+
+// SprintsResponse represents the response from listing sprints
+type SprintsResponse struct {
+	MaxResults int      `json:"maxResults"`
+	StartAt    int      `json:"startAt"`
+	IsLast     bool     `json:"isLast"`
+	Values     []Sprint `json:"values"`
+}
+
+// TransitionsResponse represents available transitions
+type TransitionsResponse struct {
+	Transitions []Transition `json:"transitions"`
+}
+
+// CommentsResponse represents issue comments
+type CommentsResponse struct {
+	StartAt    int       `json:"startAt"`
+	MaxResults int       `json:"maxResults"`
+	Total      int       `json:"total"`
+	Comments   []Comment `json:"comments"`
+}
+
+// CreateIssueRequest represents a request to create an issue
+type CreateIssueRequest struct {
+	Fields map[string]interface{} `json:"fields"`
+}
+
+// UpdateIssueRequest represents a request to update an issue
+type UpdateIssueRequest struct {
+	Fields map[string]interface{} `json:"fields,omitempty"`
+	Update map[string]interface{} `json:"update,omitempty"`
+}
+
+// TransitionRequest represents a request to transition an issue
+type TransitionRequest struct {
+	Transition TransitionID `json:"transition"`
+}
+
+// TransitionID wraps a transition ID
+type TransitionID struct {
+	ID string `json:"id"`
+}
+
+// AddCommentRequest represents a request to add a comment
+type AddCommentRequest struct {
+	Body *ADFDocument `json:"body"`
+}
