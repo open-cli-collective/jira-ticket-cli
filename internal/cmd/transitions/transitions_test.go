@@ -3,8 +3,9 @@ package transitions
 import (
 	"testing"
 
-	"github.com/piekstra/jira-ticket-cli/api"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/piekstra/jira-ticket-cli/api"
 )
 
 func TestFormatFieldValue(t *testing.T) {
