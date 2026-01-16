@@ -1,7 +1,6 @@
 package comments
 
 import (
-	"github.com/piekstra/jira-ticket-cli/api"
 	"github.com/piekstra/jira-ticket-cli/internal/cmd/root"
 	"github.com/spf13/cobra"
 )
