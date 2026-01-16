@@ -88,13 +88,6 @@ func runGet(opts *root.Options, issueKey string) error {
 	return nil
 }
 
-func formatStatus(status string) string {
-	if status == "" {
-		return "-"
-	}
-	return status
-}
-
 func formatAssignee(name string) string {
 	if name == "" {
 		return "Unassigned"

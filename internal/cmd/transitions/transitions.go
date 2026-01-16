@@ -26,11 +26,11 @@ func Register(parent *cobra.Command, opts *root.Options) {
 
 func newListCmd(opts *root.Options) *cobra.Command {
 	return &cobra.Command{
-		Use:   "list <issue-key>",
-		Short: "List available transitions",
-		Long:  "List the available workflow transitions for an issue.",
+		Use:     "list <issue-key>",
+		Short:   "List available transitions",
+		Long:    "List the available workflow transitions for an issue.",
 		Example: `  jira-ticket-cli transitions list PROJ-123`,
-		Args: cobra.ExactArgs(1),
+		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			return runList(opts, args[0])
 		},

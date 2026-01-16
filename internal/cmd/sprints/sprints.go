@@ -104,9 +104,9 @@ func newCurrentCmd(opts *root.Options) *cobra.Command {
 	var boardID int
 
 	cmd := &cobra.Command{
-		Use:   "current",
-		Short: "Show current sprint",
-		Long:  "Show the current active sprint for a board.",
+		Use:     "current",
+		Short:   "Show current sprint",
+		Long:    "Show the current active sprint for a board.",
 		Example: `  jira-ticket-cli sprints current --board 123`,
 		RunE: func(cmd *cobra.Command, args []string) error {
 			if boardID == 0 {
@@ -158,11 +158,11 @@ func newIssuesCmd(opts *root.Options) *cobra.Command {
 	var maxResults int
 
 	cmd := &cobra.Command{
-		Use:   "issues <sprint-id>",
-		Short: "List issues in a sprint",
-		Long:  "List all issues in a specific sprint.",
+		Use:     "issues <sprint-id>",
+		Short:   "List issues in a sprint",
+		Long:    "List all issues in a specific sprint.",
 		Example: `  jira-ticket-cli sprints issues 456`,
-		Args: cobra.ExactArgs(1),
+		Args:    cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			var sprintID int
 			if _, err := fmt.Sscanf(args[0], "%d", &sprintID); err != nil {

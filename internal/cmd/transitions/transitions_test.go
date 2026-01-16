@@ -9,10 +9,10 @@ import (
 
 func TestFormatFieldValue(t *testing.T) {
 	tests := []struct {
-		name   string
-		field  *api.Field
-		value  string
-		want   interface{}
+		name  string
+		field *api.Field
+		value string
+		want  interface{}
 	}{
 		{
 			name:  "nil field - returns string as-is",
