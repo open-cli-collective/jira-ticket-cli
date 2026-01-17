@@ -16,14 +16,16 @@ A command-line interface for managing Jira Cloud tickets.
 ### Homebrew (macOS)
 
 ```bash
-brew tap open-cli-collective/jira-ticket-cli
-brew install jira-ticket-cli
+brew tap open-cli-collective/tap
+brew install --cask jira-ticket-cli
 ```
+
+> **Note:** Homebrew installation will be available after the first release.
 
 ### Go Install
 
 ```bash
-go install github.com/open-cli-collective/jira-ticket-cli/cmd/jira-ticket-cli@latest
+go install github.com/piekstra/jira-ticket-cli/cmd/jira-ticket-cli@latest
 ```
 
 ### Binary Download
