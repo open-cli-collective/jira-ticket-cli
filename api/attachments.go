@@ -12,14 +12,41 @@ import (
 
 // Attachment represents a Jira attachment
 type Attachment struct {
-	ID       string `json:"id"`
-	Filename string `json:"filename"`
-	Author   User   `json:"author"`
-	Created  string `json:"created"`
-	Size     int64  `json:"size"`
-	MimeType string `json:"mimeType"`
-	Content  string `json:"content"` // URL to download the attachment
-	Self     string `json:"self"`
+	ID       FlexibleID `json:"id"`
+	Filename string     `json:"filename"`
+	Author   User       `json:"author"`
+	Created  string     `json:"created"`
+	Size     int64      `json:"size"`
+	MimeType string     `json:"mimeType"`
+	Content  string     `json:"content"` // URL to download the attachment
+	Self     string     `json:"self"`
+}
+
+// FlexibleID handles Jira API inconsistency where IDs can be strings or numbers
+type FlexibleID string
+
+// UnmarshalJSON handles both string and number JSON values for IDs
+func (f *FlexibleID) UnmarshalJSON(data []byte) error {
+	// Try string first
+	var s string
+	if err := json.Unmarshal(data, &s); err == nil {
+		*f = FlexibleID(s)
+		return nil
+	}
+
+	// Try number
+	var n int64
+	if err := json.Unmarshal(data, &n); err == nil {
+		*f = FlexibleID(fmt.Sprintf("%d", n))
+		return nil
+	}
+
+	return fmt.Errorf("id must be string or number, got: %s", string(data))
+}
+
+// String returns the ID as a string
+func (f FlexibleID) String() string {
+	return string(f)
 }
 
 // GetIssueAttachments returns all attachments for an issue

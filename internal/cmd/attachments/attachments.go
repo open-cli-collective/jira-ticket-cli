@@ -81,7 +81,7 @@ func runList(opts *root.Options, issueKey string) error {
 		}
 
 		rows = append(rows, []string{
-			att.ID,
+			att.ID.String(),
 			att.Filename,
 			api.FormatFileSize(att.Size),
 			author,
@@ -146,7 +146,7 @@ func runAdd(opts *root.Options, issueKey string, files []string) error {
 	}
 
 	for _, att := range allAttachments {
-		v.Success("Added %s (ID: %s, %s)", att.Filename, att.ID, api.FormatFileSize(att.Size))
+		v.Success("Added %s (ID: %s, %s)", att.Filename, att.ID.String(), api.FormatFileSize(att.Size))
 	}
 
 	return nil
